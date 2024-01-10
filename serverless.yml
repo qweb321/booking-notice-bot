@@ -1,0 +1,20 @@
+org: isislin
+app: line-bot
+service: line-bot
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+
+functions:
+  function1:
+    handler: handler.webhook
+    events:
+      - http:
+          path: /webhook
+          method: post
+  
+plugins:
+  - serverless-plugin-typescript
+  - serverless-offline
