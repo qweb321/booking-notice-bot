@@ -1,7 +1,7 @@
 import { RichMenu } from '@line/bot-sdk';
 
 
-export const richMenuObject: RichMenu  ={
+export const richMenuObjectA: RichMenu  ={
     size: {
         width: 2500,
             height: 843
@@ -42,8 +42,12 @@ export const richMenuObject: RichMenu  ={
                             height: 783
                         },
                         action: {
-                            type: 'message',
-                            text: '行事曆'
+                            type: 'datetimepicker',
+                            data: '資料 4',
+                            mode: 'date',
+                            initial: '2024-01-15',
+                            max: '2025-01-15',
+                            min: '2023-01-15'
                         }
                     }
                 ]
