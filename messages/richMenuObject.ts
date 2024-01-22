@@ -19,7 +19,7 @@ export const richMenuObjectA: RichMenu  ={
                         },
                         action: {
                             type: 'message',
-                            text: '最近節慶'
+                            text: '今年假期'
                         }
                     },
                     {

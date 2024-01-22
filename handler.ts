@@ -1,19 +1,20 @@
 import * as line from '@line/bot-sdk';
-import { ClientConfig, messagingApi, WebhookEvent, WebhookRequestBody, PostbackEvent, FollowEvent, MessageEvent } from '@line/bot-sdk';
+import { ClientConfig, messagingApi, WebhookEvent, WebhookRequestBody, PostbackEvent, FollowEvent, MessageEvent, FlexComponent } from '@line/bot-sdk';
 import { Request } from '@line/bot-sdk/dist/middleware';
 import { welcomeMessage } from './messages/welcome';
 import { textMessage } from './messages/testMessage';
-import { getHoliday } from './config/holiday';
+import { bookingFlexMessage, flexMessage, boxtMessage } from './messages/flex-message';
+import { getHoliday, getContinuousHolidays } from './config/holiday';
 import { richMenuObjectA } from './messages/richMenuObject';
 import { readFileSync } from 'fs';
 import FetchApi from './message-api/api';
-import moment from 'moment-timezone';
+import { getThsrcNews } from './config/get-days-in-month';
 
 module.exports.webhook = async (event: Request): Promise<void> => {
   if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config();
   }
-  
+
   const lineConfig: ClientConfig = {
     channelAccessToken: process.env.CHANNEL_ACCESS_TOKEN as string,
   };
@@ -36,11 +37,8 @@ module.exports.webhook = async (event: Request): Promise<void> => {
 
     await fetchApi.setDefaulMenu(richMenuId);
 
-    console.log('event', event );
     const body: WebhookRequestBody = JSON.parse(event.body);
-    console.log('body', body);
     const response: WebhookEvent = body.events[0];
-    console.log('response', response);
     handleEvent(client, response);
   } catch (err) {
     console.error(err);
@@ -49,7 +47,7 @@ module.exports.webhook = async (event: Request): Promise<void> => {
 };
 
 
-const replyText = (client: messagingApi.MessagingApiClient, replyToken: string, msg: line.TextMessage | line.TextMessage[]): void => {
+const replyText = (client: messagingApi.MessagingApiClient, replyToken: string, msg: line.TextMessage | line.TextMessage[] | line.FlexMessage): void => {
   if (Array.isArray(msg)) {
     client.replyMessage({
       replyToken,
@@ -89,31 +87,32 @@ const handleEvent = async (client: messagingApi.MessagingApiClient, event: Webho
 
 const newFriendWelcome = async (client: messagingApi.MessagingApiClient, event: FollowEvent): Promise<void> => {
   try {
-    // if (event.type !== 'follow') return;
     const { replyToken } = event;
     replyText(client, replyToken, welcomeMessage);
   } catch (err) {
-    console.log(err);
+    console.error(err);
   }
 };
 
 const replyMessage = async (client: messagingApi.MessagingApiClient, event: MessageEvent): Promise<void> => {
   try {
-    // if (event.type !== 'message') return;
     const { replyToken, message } = event;
     if (message.type === 'text') {
       switch (message.text) {
-        case '最近節慶':
+        case '今年假期':
           try {
-            let msg: string = '最近的三個節日:';
+            const contents: FlexComponent[] = [];
             const year = new Date().getFullYear();
-            const today = moment().tz('Asia/Taipei').format('YYYYMMDD');
-            const data = await getHoliday(year, today);
-            console.log(data);
+            const data = await getContinuousHolidays(year);
             if (Array.isArray(data)) {
-              // const recent3Days = data.slice(0, 3);
-              data.forEach((item, index) => msg += `\n${index + 1}. ${item.date} ${item.description}`);
-              replyText(client, replyToken, textMessage(msg));
+              data.forEach((item, index) =>
+                contents.push(boxtMessage('vertical', [{
+                  type: 'text',
+                  text: `${index + 1}. ${item.startDay} 到 ${item.endDay} 連續${item.continuous}日 ${item.description}`,
+                  wrap: true
+                }]))
+              );
+              replyText(client, replyToken, flexMessage(contents));
             } else {
               console.error(data.message);
             }
@@ -123,14 +122,31 @@ const replyMessage = async (client: messagingApi.MessagingApiClient, event: Mess
             break;
           }
         case '最新資訊':
-          replyText(client, replyToken, textMessage('啥都沒有'));
+          try {
+            const thsrcNews = await getThsrcNews();
+            const contents: FlexComponent[] = [{ type: 'text', text: '台鐵、高鐵票可訂購時間⬇️', weight: 'bold' }];
+            if (thsrcNews) {
+              thsrcNews.forEach((item) =>
+                contents.push(boxtMessage('vertical', [{
+                  type: 'text',
+                  text: `${item[0]}: ${item[2]}`,
+                  wrap: true,
+                }]))
+              );
+              replyText(client, replyToken, bookingFlexMessage(contents));
+            } else {
+              replyText(client, replyToken, textMessage('啥都沒有'));
+            }
+          } catch (err) {
+            console.error(err);
+          }
           break;
         default:
           replyText(client, replyToken, welcomeMessage);
       }
     }
   } catch (err) {
-    console.log(err);
+    console.error(err);
   }
 };
 
@@ -143,13 +159,30 @@ const calenderSelect = async (client: messagingApi.MessagingApiClient, event: Po
       const year = Number(date?.slice(0, 4));
       const selectDate = date?.replace(/-/g, '') || '';
       const data = await getHoliday(year, selectDate);
+      const contents: FlexComponent[] = [{ type: 'text', text: `${selectDate}最近的三個假期⬇️`, weight: 'bold' }];
       if (Array.isArray(data)) {
-        let msg: string = `你所選日期${selectDate}最近的三個節日:`;
-        data.forEach((item, index) => msg += `\n${index + 1}. ${item.date} ${item.description}`);
-        replyText(client, replyToken, textMessage(msg));
+        if (!data.length) {
+          contents.push(boxtMessage('vertical', [{
+            type: 'text',
+            text: '目前沒有假期'
+          }]));
+          return replyText(client, replyToken, flexMessage(contents));
+        } else {
+          data.forEach((item) =>
+            contents.push(boxtMessage('vertical', [{
+              type: 'text',
+              text: `${item.startDay}至${item.endDay}，${item.continuous}日，${item.description}`,
+              wrap: true,
+            }]))
+          );
+          return replyText(client, replyToken, flexMessage(contents));
+        }
       } else {
-        // 處理 ApiError 的情況｀
-        console.error('Error:', data.message);
+        contents.push(boxtMessage('vertical', [{
+          type: 'text',
+          text: '目前沒有假期'
+        }]));
+        return replyText(client, replyToken, flexMessage(contents));
       }
     } else {
       // 處理 postback.params 不存在的情況
