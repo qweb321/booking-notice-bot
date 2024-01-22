@@ -6,6 +6,10 @@ frameworkVersion: '3'
 provider:
   name: aws
   runtime: nodejs18.x
+  region: us-east-1
+  environment:
+    CHANNEL_SECRET: ${process.env.CHANNEL_SECRET}
+    CHANNEL_ACCESS_TOKEN: ${process.env.CHANNEL_ACCESS_TOKEN}
 
 functions:
   function1:
