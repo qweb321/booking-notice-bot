@@ -3,13 +3,16 @@ app: line-bot
 service: line-bot
 frameworkVersion: '3'
 
+useDotenv: true
+
 provider:
   name: aws
   runtime: nodejs18.x
   region: us-east-1
   environment:
-    CHANNEL_SECRET: ${process.env.CHANNEL_SECRET}
-    CHANNEL_ACCESS_TOKEN: ${process.env.CHANNEL_ACCESS_TOKEN}
+    CHANNEL_SECRET: ${env:CHANNEL_SECRET}
+    CHANNEL_ACCESS_TOKEN: ${env:CHANNEL_ACCESS_TOKEN}
+  
 
 functions:
   function1:
@@ -19,6 +22,14 @@ functions:
           path: /webhook
           method: post
   
+package:
+  include:
+    - image/**
+    - message-pai/**
+    - messages/**
+    - config/**
+
 plugins:
   - serverless-plugin-typescript
   - serverless-offline
+  - serverless-dotenv-plugin

@@ -5,6 +5,6 @@ export const welcomeMessage: TextMessage[] = [{
     text: '歡迎加入買票通知 BOT🎉'
 },{
     type: 'text',
-    text: '距離重要節日可以開始訂票前一天會發出訊息通知可購票。'
+    text: '點選下列選單可以瀏覽整年節日、車票預訂日期及特定時間後的節日。'
 }];
 

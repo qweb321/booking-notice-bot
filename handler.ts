@@ -9,8 +9,9 @@ import { richMenuObjectA } from './messages/richMenuObject';
 import { readFileSync } from 'fs';
 import FetchApi from './message-api/api';
 import { getThsrcNews } from './config/get-days-in-month';
+import path from 'path';
 
-module.exports.webhook = async (event: Request): Promise<void> => {
+module.exports.webhook = async (event: Request): Promise<void | { statusCode: number; }> => {
   if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config();
   }
@@ -31,7 +32,8 @@ module.exports.webhook = async (event: Request): Promise<void> => {
     line.middleware(clientConfig);
 
     const richMenuId = (await client.createRichMenu(richMenuObjectA)).richMenuId;
-    const richMenuImage = readFileSync('./image/richmenu.jpg');
+    const imagePath = path.join(__dirname, 'image', 'richmenu.jpg');
+    const richMenuImage = readFileSync(imagePath);
 
     await fetchApi.setMenuImage(richMenuId, richMenuImage, 'image/jpeg');
 
@@ -39,7 +41,13 @@ module.exports.webhook = async (event: Request): Promise<void> => {
 
     const body: WebhookRequestBody = JSON.parse(event.body);
     const response: WebhookEvent = body.events[0];
-    handleEvent(client, response);
+    console.log(body);
+    if (!body.events.length) {
+      return {
+        statusCode: 200,
+      };
+    }
+    await handleEvent(client, response);
   } catch (err) {
     console.error(err);
   }
@@ -47,14 +55,14 @@ module.exports.webhook = async (event: Request): Promise<void> => {
 };
 
 
-const replyText = (client: messagingApi.MessagingApiClient, replyToken: string, msg: line.TextMessage | line.TextMessage[] | line.FlexMessage): void => {
+const replyText = async (client: messagingApi.MessagingApiClient, replyToken: string, msg: line.TextMessage | line.TextMessage[] | line.FlexMessage): Promise<void> => {
   if (Array.isArray(msg)) {
-    client.replyMessage({
+    await client.replyMessage({
       replyToken,
       messages: msg
     });
   } else {
-    client.replyMessage({
+    await client.replyMessage({
       replyToken,
       messages: [msg]
     });
@@ -63,22 +71,24 @@ const replyText = (client: messagingApi.MessagingApiClient, replyToken: string, 
 
 const handleEvent = async (client: messagingApi.MessagingApiClient, event: WebhookEvent): Promise<void> => {
   try {
-    switch (event.type) {
-      case 'message':
-        switch (event.message.type) {
-          case 'text':
-            return replyMessage(client, event);
-          default:
-            return;
-        }
-      case 'follow':
-        return newFriendWelcome(client, event);
-      case 'postback':
-        return calenderSelect(client, event);
-      default:
-        break;
+    if (event) {
+      switch (event.type) {
+        case 'message':
+          switch (event.message.type) {
+            case 'text':
+              return await replyMessage(client, event);
+            default:
+              return;
+          }
+        case 'follow':
+          return await newFriendWelcome(client, event);
+        case 'postback':
+          return await calenderSelect(client, event);
+        default:
+          console.error(`Unhandled event type: ${event.type}`);
+          break;
+      }
     }
-
   } catch (err) {
     console.error(err);
   }
@@ -88,7 +98,7 @@ const handleEvent = async (client: messagingApi.MessagingApiClient, event: Webho
 const newFriendWelcome = async (client: messagingApi.MessagingApiClient, event: FollowEvent): Promise<void> => {
   try {
     const { replyToken } = event;
-    replyText(client, replyToken, welcomeMessage);
+    await replyText(client, replyToken, welcomeMessage);
   } catch (err) {
     console.error(err);
   }
@@ -112,7 +122,7 @@ const replyMessage = async (client: messagingApi.MessagingApiClient, event: Mess
                   wrap: true
                 }]))
               );
-              replyText(client, replyToken, flexMessage(contents));
+              await replyText(client, replyToken, flexMessage(contents));
             } else {
               console.error(data.message);
             }
@@ -133,16 +143,16 @@ const replyMessage = async (client: messagingApi.MessagingApiClient, event: Mess
                   wrap: true,
                 }]))
               );
-              replyText(client, replyToken, bookingFlexMessage(contents));
+              await replyText(client, replyToken, bookingFlexMessage(contents));
             } else {
-              replyText(client, replyToken, textMessage('啥都沒有'));
+              await replyText(client, replyToken, textMessage('啥都沒有'));
             }
           } catch (err) {
             console.error(err);
           }
           break;
         default:
-          replyText(client, replyToken, welcomeMessage);
+          await replyText(client, replyToken, welcomeMessage);
       }
     }
   } catch (err) {
@@ -166,7 +176,7 @@ const calenderSelect = async (client: messagingApi.MessagingApiClient, event: Po
             type: 'text',
             text: '目前沒有假期'
           }]));
-          return replyText(client, replyToken, flexMessage(contents));
+          return await replyText(client, replyToken, flexMessage(contents));
         } else {
           data.forEach((item) =>
             contents.push(boxtMessage('vertical', [{
@@ -175,14 +185,14 @@ const calenderSelect = async (client: messagingApi.MessagingApiClient, event: Po
               wrap: true,
             }]))
           );
-          return replyText(client, replyToken, flexMessage(contents));
+          return await replyText(client, replyToken, flexMessage(contents));
         }
       } else {
         contents.push(boxtMessage('vertical', [{
           type: 'text',
           text: '目前沒有假期'
         }]));
-        return replyText(client, replyToken, flexMessage(contents));
+        return await replyText(client, replyToken, flexMessage(contents));
       }
     } else {
       // 處理 postback.params 不存在的情況
