@@ -8,11 +8,11 @@ useDotenv: true
 provider:
   name: aws
   runtime: nodejs18.x
-  region: us-east-1
+  region: ap-southeast-1
   environment:
     CHANNEL_SECRET: ${env:CHANNEL_SECRET}
     CHANNEL_ACCESS_TOKEN: ${env:CHANNEL_ACCESS_TOKEN}
-  
+
 
 functions:
   function1:
@@ -23,7 +23,7 @@ functions:
           method: post
   
 package:
-  include:
+  patterns:
     - image/**
     - message-pai/**
     - messages/**
@@ -31,5 +31,5 @@ package:
 
 plugins:
   - serverless-plugin-typescript
-  - serverless-offline
   - serverless-dotenv-plugin
+  - serverless-offline

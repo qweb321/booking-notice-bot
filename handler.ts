@@ -41,7 +41,6 @@ module.exports.webhook = async (event: Request): Promise<void | { statusCode: nu
 
     const body: WebhookRequestBody = JSON.parse(event.body);
     const response: WebhookEvent = body.events[0];
-    console.log(body);
     if (!body.events.length) {
       return {
         statusCode: 200,
@@ -81,7 +80,8 @@ const handleEvent = async (client: messagingApi.MessagingApiClient, event: Webho
               return;
           }
         case 'follow':
-          return await newFriendWelcome(client, event);
+          await newFriendWelcome(client, event);
+          break;
         case 'postback':
           return await calenderSelect(client, event);
         default:

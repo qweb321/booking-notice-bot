@@ -1,5 +1,5 @@
 import { RichMenu } from '@line/bot-sdk';
-
+import moment from 'moment';
 
 export const richMenuObjectA: RichMenu  ={
     size: {
@@ -45,7 +45,7 @@ export const richMenuObjectA: RichMenu  ={
                             type: 'datetimepicker',
                             data: '資料 4',
                             mode: 'date',
-                            initial: '2024-01-15',
+                            initial: moment(Date.now()).format('YYYY-MM-DD'),
                             max: '2025-01-15',
                             min: '2023-01-15'
                         }

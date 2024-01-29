@@ -11,62 +11,31 @@ authorName: 'Serverless, inc.'
 authorAvatar: 'https://avatars1.githubusercontent.com/u/13742415?s=200&v=4'
 -->
 
+# Booking Notice Bot
 
-# Serverless Framework AWS NodeJS Example
+This Line bot provides the ability to browse through holidays throughout the year, check train ticket booking times, and discover holidays around specific dates.
+This project built with NodeJS function and deploy to AWS Lambda using the traditional Serverless Framework.
 
-This template demonstrates how to deploy a NodeJS function running on AWS Lambda using the traditional Serverless Framework. The deployed function does not include any event definitions as well as any kind of persistence (database). For more advanced configurations check out the [examples repo](https://github.com/serverless/examples/) which includes integrations with SQS, DynamoDB or examples of functions that are triggered in `cron`-like manner. For details about configuration of specific `events`, please refer to our [documentation](https://www.serverless.com/framework/docs/providers/aws/events/).
+<p align="center">
+  <img width="640" height="416" src="./image/screenshot.png">
+</p
 
 ## Usage
+Scan the QR code below or click [this link](https://lin.ee/JBsVrSv) to add the BOT on your phone.
+<p align="center">
+  <img width="200" height="200" src="https://qr-official.line.me/gs/M_399zwmbf_GW.png?oat_content=qr">
+</p
 
-### Deployment
 
-In order to deploy the example, you need to run the following command:
+## Built With
+![NodeJS](https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)
+![AWS](https://img.shields.io/badge/AWS-%23FF9900.svg?style=for-the-badge&logo=amazon-aws&logoColor=white)
+![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
+![Line](https://img.shields.io/badge/Line-00C300?style=for-the-badge&logo=line&logoColor=white)
 
-```
-$ serverless deploy
-```
+## API
+- [Taiwan Calender](https://github.com/ruyut/TaiwanCalendar)
+- [Line Message Api](https://developers.line.biz/en/reference/messaging-api/)
 
-After running deploy, you should see output similar to:
-
-```bash
-Deploying aws-node-project to stage dev (us-east-1)
-
-✔ Service deployed to stack aws-node-project-dev (112s)
-
-functions:
-  hello: aws-node-project-dev-hello (1.5 kB)
-```
-
-### Invocation
-
-After successful deployment, you can invoke the deployed function by using the following command:
-
-```bash
-serverless invoke --function hello
-```
-
-Which should result in response similar to the following:
-
-```json
-{
-    "statusCode": 200,
-    "body": "{\n  \"message\": \"Go Serverless v3.0! Your function executed successfully!\",\n  \"input\": {}\n}"
-}
-```
-
-### Local development
-
-You can invoke your function locally by using the following command:
-
-```bash
-serverless invoke local --function hello
-```
-
-Which should result in response similar to the following:
-
-```
-{
-    "statusCode": 200,
-    "body": "{\n  \"message\": \"Go Serverless v3.0! Your function executed successfully!\",\n  \"input\": \"\"\n}"
-}
-```
+## Contributor
+- [Isis Lin](https://github.com/qweb321)
