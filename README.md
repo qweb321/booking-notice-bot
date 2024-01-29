@@ -23,7 +23,7 @@ This project built with NodeJS function and deploy to AWS Lambda using the tradi
 ## Usage
 Scan the QR code below or click [this link](https://lin.ee/JBsVrSv) to add the BOT on your phone.
 <p align="center">
-  <img width="200" height="200" src="https://qr-official.line.me/gs/M_399zwmbf_GW.png?oat_content=qr">
+  <img width="200" height="200" src="./image/399zwmbf.png">
 </p
 
 
