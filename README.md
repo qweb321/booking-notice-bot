@@ -18,13 +18,13 @@ This project built with NodeJS function and deploy to AWS Lambda using the tradi
 
 <p align="center">
   <img width="640" height="416" src="./image/screenshot.png">
-</p
+</p>
 
 ## Usage
 Scan the QR code below or click [this link](https://lin.ee/JBsVrSv) to add the BOT on your phone.
 <p align="center">
   <img width="200" height="200" src="./image/399zwmbf.png">
-</p
+</p>
 
 
 ## Built With
